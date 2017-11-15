@@ -1,0 +1,27 @@
+{
+  "couchbase": {
+    "server": "couchbase://10.0.2.28",
+    "bucket": "afame",
+    "sync_server_admin": "10.0.2.28:4985",
+    "sync_server_public": "10.0.2.28:4984",
+    "sync_db": "afame"
+  },
+  "couchbase_": {
+    "server": "couchbase://localhost",
+    "bucket": "risto",
+    "sync_server_admin": "localhost:4985",
+    "sync_server_public": "localhost:4984",
+    "sync_db": "risto"
+  },
+  "couchbase__": {
+    "server": "couchbase://192.168.1.146",
+    "bucket": "risto",
+    "sync_server_admin": "192.168.1.146:4985",
+    "sync_server_public": "192.168.1.146:4984",
+    "sync_db": "risto"
+  },
+  "printer": {
+    "ip": "10.0.0.116"
+  },
+  "salt": "ASTEN"
+}
