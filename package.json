@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "production" : "set NODE_ENV=production && node dist/server.js",
+    "production": "set NODE_ENV=production && node dist/server.js",
     "start": "nodemon -w dist dist/server.js",
     "compile-server": "babel server --presets es2015-node6 --out-dir dist --source-maps",
     "watch-server": "babel server --presets es2015-node6 --out-dir dist --source-maps --watch",

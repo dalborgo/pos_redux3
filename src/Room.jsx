@@ -8,7 +8,6 @@ import GridListExampleSingleLine from './GridListExampleSingleLine.jsx';
 //import spec from '../static/sg/sync-gateway-public-1-4_public.json';
 import {Nav, NavItem} from 'react-bootstrap';
 import api from './api'
-
 const a = new api();
 const poll = {
     longpoll: function (that) {
@@ -39,7 +38,7 @@ const poll = {
 
         function getChanges(seq) {
             console.log('seq %s', seq)
-            const querystring = 'feed=normal&filter=sync_gateway/bychannel&channels=Tables&timeout=0&since=' + seq;
+            const querystring = 'feed=normal&filter=sync_gateway/bychannel&channels=tables&timeout=0&since=' + seq;
             const options = {
                 url: sync_gateway_url + '_changes?' + querystring
             };
@@ -97,10 +96,12 @@ export default class IssueList extends React.Component {
 
     componentWillMount() {
         console.log('CARICA');
-        poll.longpoll(this);
+        //poll.longpoll(this);
         this.loadData('');
     }
-
+    componentWillUnmount(){
+        console.log('unmount')
+    }
     loadData(stale) {
         a.getView('rooms', 'all', stale).then(
             (res) => {

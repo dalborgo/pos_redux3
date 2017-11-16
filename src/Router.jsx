@@ -11,9 +11,10 @@ import {Navbar, Nav, NavItem, NavDropdown, MenuItem, Glyphicon, Table, Panel, Fo
 import {LinkContainer} from 'react-router-bootstrap';
 import UserForm from './UserForm.jsx'
 import IssueAddNavItem from './IssueAddNavItem.jsx'
-const NoMatch = () => <p>Page Not Found</p>;
 import Room from './Room.jsx';
+import Attico from './Attico.jsx';
 import Redux from './components/Redux.jsx';
+const NoMatch = () => <p>Page Not Found</p>;
 
 const Header = () => (
     <Navbar fluid>
@@ -29,6 +30,9 @@ const Header = () => (
             </LinkContainer>
             <LinkContainer to="/redux/User::dalborgo">
                 <NavItem>Redux</NavItem>
+            </LinkContainer>
+            <LinkContainer to="/attico">
+                <NavItem>Tavoli Attivi</NavItem>
             </LinkContainer>
         </Nav>
         <Nav pullRight>
@@ -53,6 +57,7 @@ const BasicExample = () => (
                     <Room setDefault={setDefault} />
                 </Route>
                 <Route path="/redux/:filter" component={Redux} />
+                <Route path="/attico" component={Attico} />
                 <Redirect from="/stanze" to="/room"/>
                 <Route component={NoMatch}/>
             </Switch>

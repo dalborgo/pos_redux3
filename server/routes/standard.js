@@ -1,7 +1,8 @@
 /*var bcrypt = require("bcryptjs");
 var UserModel = require("../models/user");*/
-import {bucket} from "../server";
+import {bucket, N1qlQuery} from "../server";
 import Stampante from "../../models/printer"
+
 const appRouter = function (app) {
     app.get("/api/sync/table/multi", function (req, res) {
         bucket.getMulti(['Table::0dbae660-79cb-4a58-bf09-e4d751cc4536', 'Table::6f5e484d-8e4f-41e6-9c68-40fc728e4eb0'], function (errors, results) {
@@ -24,9 +25,17 @@ const appRouter = function (app) {
 
     });
     app.post("/api/get/var", function (req, res) {
-        bucket.get(req.body.variable,function (err, r) {
+        bucket.get(req.body.variable, function (err, r) {
             res.json(r)
         })
+    });
+    app.get("/api/get/query", function (req, res) {
+        let q = "SELECT meta(table).id id, table.`order`,table.display, `order`[0].creating_date, ARRAY [r.product_price,r.product_qta] FOR r in `order`[0].entries END entries FROM afame table NEST afame `order` ON KEYS table.`order` WHERE table.type= 'Table' AND table.Room = 'Room::fe276048-67f3-4cc6-94b3-c13575620e75' AND meta(table).id NOT LIKE \"_sync%\"";
+        const query = N1qlQuery.fromString(q);
+        bucket.query(query, function (err, prn) {
+            res.json(prn)
+        });
+
     });
     app.post("/api/stampante/create", function (req, res) {
         const m = new Stampante({

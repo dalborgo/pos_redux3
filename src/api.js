@@ -10,7 +10,13 @@ export default class api {
         this.url = `http://${config.couchbase.sync_server_public}/${config.couchbase.sync_db}`
         this.urlA = `http://${config.couchbase.sync_server_admin}/${config.couchbase.sync_db}`
     }
-
+    getTableOrder(){
+        return fetch('/api/get/query', {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then((res) => res.json());
+    }
     getDoc(id) {
         return fetch(this.url + '/' + id, {
             headers: {

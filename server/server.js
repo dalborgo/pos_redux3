@@ -33,7 +33,8 @@ app.use(session({
 
 const myBucket = (new couchbase.Cluster(config.couchbase.server)).openBucket(config.couchbase.bucket);
 ottoman.store = new ottoman.CbStoreAdapter(myBucket, couchbase);
-module.exports = {store: ottoman.store, bucket: myBucket};
+const N1qlQuery = couchbase.N1qlQuery;
+module.exports = {store: ottoman.store, bucket: myBucket, N1qlQuery};
 //module.exports.bucket = myBucket;
 
 /*couchbaseStore.on('connect', function () {
