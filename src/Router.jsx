@@ -12,7 +12,8 @@ import {LinkContainer} from 'react-router-bootstrap';
 import UserForm from './UserForm.jsx'
 import IssueAddNavItem from './IssueAddNavItem.jsx'
 import Room from './Room.jsx';
-import Attico from './Attico.jsx';
+import Attivi from './Attivi.jsx';
+import Tutti from './Tutti.jsx';
 import Redux from './components/Redux.jsx';
 const NoMatch = () => <p>Page Not Found</p>;
 
@@ -31,8 +32,11 @@ const Header = () => (
             <LinkContainer to="/redux/User::dalborgo">
                 <NavItem>Redux</NavItem>
             </LinkContainer>
-            <LinkContainer to="/attico">
+            <LinkContainer to="/attivi">
                 <NavItem>Tavoli Attivi</NavItem>
+            </LinkContainer>
+            <LinkContainer to="/tutti">
+                <NavItem>Tavoli Tutti</NavItem>
             </LinkContainer>
         </Nav>
         <Nav pullRight>
@@ -54,10 +58,13 @@ const BasicExample = () => (
             <Switch>
                 <Route exact path="/" component={Home}/>
                 <Route path="/room">
-                    <Room setDefault={setDefault} />
+                    <Room  />
+                </Route>
+                <Route path="/tutti">
+                    <Tutti setDefault={setDefault} />
                 </Route>
                 <Route path="/redux/:filter" component={Redux} />
-                <Route path="/attico" component={Attico} />
+                <Route path="/attivi" component={Attivi} />
                 <Redirect from="/stanze" to="/room"/>
                 <Route component={NoMatch}/>
             </Switch>

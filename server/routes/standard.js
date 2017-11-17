@@ -21,6 +21,8 @@ const appRouter = function (app) {
 
         });
     });
+
+
     app.post("/api/set/var", function (req, res) {
 
     });
@@ -36,6 +38,15 @@ const appRouter = function (app) {
             res.json(prn)
         });
 
+    });
+
+    app.get("/api/get/vista", function (req, res2) {
+        fetch('http://10.0.2.28:4984/afame/_design/tables/_view/all?include_docs=true&stale=', {
+            method: 'get',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then((res) => res2.send(res.json()));
     });
     app.post("/api/stampante/create", function (req, res) {
         const m = new Stampante({

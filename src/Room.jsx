@@ -12,12 +12,16 @@ const a = new api();
 const poll = {
     longpoll: function (that) {
         function getChanges(seq) {
+            if (that.stopPolling)
+                return
             console.log('seq %s', seq);
             let url = `http://${config.couchbase.sync_server_public}/${config.couchbase.sync_db}`;
             console.log('Attesa tavoli');
-            fetch(url + `/_changes?include_docs=true&feed=longpoll&filter=sync_gateway/bychannel&channels=tables,rooms&limit=1&since=${seq}`, {})
+            fetch(url + `/_changes?include_docs=true&feed=longpoll&filter=sync_gateway/bychannel&channels=tables,rooms&limit=1&timeout=1000&since=${seq}`, {})
                 .then((res) => res.json())
                 .then((res) => {
+                    if (that.stopPolling)
+                        return
                     let m = res.results;
                     console.log('Tavoli ' + m.length);
                     if (m.length > 0) {
@@ -88,19 +92,47 @@ export default class IssueList extends React.Component {
         this.state = {
             tables: [],
             rooms: [],
-            room: this.props.setDefault()
+            room: 'Room::fe276048-67f3-4cc6-94b3-c13575620e75'
         };
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
-    }
+        this.stopPolling = false
 
+    }
+    longpoll(that) {
+        function getChanges(seq) {
+            if (that.stopPolling)
+                return
+            console.log('seq %s', seq);
+            let url = `http://${config.couchbase.sync_server_public}/${config.couchbase.sync_db}`;
+            console.log('Attesa tavoli e ordini...');
+            fetch(url + `/_changes?include_docs=true&feed=longpoll&filter=sync_gateway/bychannel&channels=tables,rooms&limit=1&since=${seq}`, {})
+                .then((res) => res.json())
+                .then((res) => {
+                    if (that.stopPolling)
+                        return
+                    let m = res.results;
+                    console.log('Tavoli e ordini trovati ' + m.length);
+                    if (m.length > 0) {
+                        console.log('Carica...');
+                        that.loadData(false);
+                    }
+                    getChanges(res.last_seq);
+                });
+        }
+
+        a.get_var('_sync:seq').then(res => {
+            getChanges(res.value)
+        });
+    }
     componentWillMount() {
         console.log('CARICA');
-        //poll.longpoll(this);
-        this.loadData('');
+        this.longpoll(this);
+        this.loadData(false);
     }
     componentWillUnmount(){
         console.log('unmount')
+        this.stopPolling = true
     }
     loadData(stale) {
         a.getView('rooms', 'all', stale).then(

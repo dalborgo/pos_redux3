@@ -5,6 +5,7 @@ import _ from 'underscore';
 const path = require("path");
 import {v4} from 'uuid';
 
+
 export default class api {
     constructor() {
         this.url = `http://${config.couchbase.sync_server_public}/${config.couchbase.sync_db}`
@@ -12,6 +13,14 @@ export default class api {
     }
     getTableOrder(){
         return fetch('/api/get/query', {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then((res) => res.json ? res.json(): undefined);
+    }
+    getAllDocs(ids) {
+        ids=('"' + ids.join("','") + '"')
+        return fetch(this.url + '/_all_docs?include_docs=true&keys=['+ids+']', {
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -79,7 +88,8 @@ export default class api {
             body: JSON.stringify({variable:v}),
         }).then((res) => res.json());
     }
-    getView(ddoc, view,stale) {
+    getView(ddoc, view, stale) {
+
         return fetch(this.url + '/_design/' + ddoc + '/_view/' + view + '?include_docs=true&stale='+stale, {
             method: 'get',
             headers: {

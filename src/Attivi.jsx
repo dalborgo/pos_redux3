@@ -17,34 +17,6 @@ import {Nav, NavItem, Grid, Row, Col, Thumbnail, Button} from 'react-bootstrap';
 import api from './api'
 
 const a = new api();
-const poll = {
-    longpoll: function (that) {
-        function getChanges(seq) {
-            console.log('seq %s', seq);
-            let url = `http://${config.couchbase.sync_server_public}/${config.couchbase.sync_db}`;
-            console.log('Attesa tavoli');
-            fetch(url + `/_changes?include_docs=true&feed=longpoll&filter=sync_gateway/bychannel&channels=tables,orders&limit=1&since=${seq}`, {})
-                .then((res) => res.json())
-                .then((res) => {
-                    let m = res.results;
-                    console.log('Tavoli ' + m.length);
-                    if (m.length > 0) {
-                        console.log('CARICA2');
-                        that.loadData(false);
-
-                    }
-                    getChanges(res.last_seq);
-                });
-        }
-
-        a.get_var('_sync:seq').then(res => {
-            getChanges(res.value)
-        });
-    }
-};
-
-//spec.host = config.couchbase.sync_server;
-
 
 const Table = (props) => (
     <div>
@@ -73,7 +45,7 @@ const Row2 = (props) => {
     let tot = props.entries.reduce((a, b) => a[0] * a[1] + b[0] * b[1]);
     const now = moment().format('YYYYMMDDHHmmss')
     const then = props.creating_date;
-    const diff = moment.utc(moment(now, "YYYYMMDDHHmmss").diff(moment(then, "YYYYMMDDHHmmss"))).format("HH:mm:ss")
+    const diff = moment.utc(moment(now, "YYYYMMDDHHmmss").diff(moment(then, "YYYYMMDDHHmmss"))).format("HH:mm")
     return (<Row>
         <Col xs={6} md={4}>
             <Thumbnail src="/svg/tab_pieno.svg" alt="200x200">
@@ -86,13 +58,17 @@ const Row2 = (props) => {
 };
 
 function Thumb(props) {
-
-    let Tables = props.tables.map(tab => <Row2 {...tab} key={tab.id}/>);
-    return (
-        <Grid>
-            {Tables}
-        </Grid>
-    )
+    try{
+        let Tables = props.tables.map(tab => <Row2 {...tab} key={tab.id}/>);
+        return (
+            <Grid>
+                {Tables}
+            </Grid>
+        )
+    }
+    catch(err){
+        return(<div></div>)
+    }
 }
 
 export default class IssueList extends React.Component {
@@ -102,33 +78,65 @@ export default class IssueList extends React.Component {
             tables: [],
             rooms: []
         };
+        this.stopPolling = false
         this.tick = this.tick.bind(this);
     }
+
     tick() {
         this.forceUpdate()
     }
+
     componentWillMount() {
-        console.log('CARICA');
-        poll.longpoll(this);
-        this.loadData('');
+
+    }
+
+    longpoll(that) {
+        function getChanges(seq) {
+            if (that.stopPolling)
+                return
+            console.log('seq %s', seq);
+            let url = `http://${config.couchbase.sync_server_public}/${config.couchbase.sync_db}`;
+            console.log('Attesa tavoli attivi...');
+            fetch(url + `/_changes?include_docs=true&feed=longpoll&filter=sync_gateway/bychannel&channels=tables,orders&limit=1&since=${seq}`, {})
+                .then((res) => res.json())
+                .then((res) => {
+                    if (that.stopPolling)
+                        return
+                    let m = res.results;
+                    console.log('Tavoli attivi trovati ' + m.length);
+                    if (m.length > 0) {
+                        console.log('Carica...');
+                        that.loadData(false);
+
+                    }
+                    getChanges(res.last_seq);
+                    //clearTimeout(that.timer);
+                });
+        }
+
+        a.get_var('_sync:seq').then(res => {
+            getChanges(res.value)
+        });
     }
 
     componentDidMount() {
-        this.interval = setInterval(this.tick, 1000);
+        console.log('CARICA');
+        this.longpoll(this);
+        this.loadData('');
+        this.interval = setInterval(this.tick, 60000);
     }
 
     componentWillUnmount() {
+        this.stopPolling = true
         clearInterval(this.interval);
     }
 
     loadData(stale) {
-
         a.getTableOrder().then(r => {
             console.log(r)
             this.setState({tables: r});
         })
     }
-
 
     render() {
         return (

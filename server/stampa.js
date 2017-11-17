@@ -56,6 +56,7 @@ function getPrinter(pd, ord, exit) {
     myBucket.query(query, function (err, prn) {
         //console.log(rows)
         let res = [];
+        let total = [];
 
         //console.log(complete_print)
         let print_exit = pd.exit;
@@ -66,20 +67,22 @@ function getPrinter(pd, ord, exit) {
                 r.forEach(function (s) {
                     if (res[s.ip]) {
                         if(complete_print || p.print_status !== 'PRINTED')
-                            res[s.ip].push({name: p.product_name, id: p.product_id, stampante: s.name});
+                            res[s.ip].push({name: p.product_display, id: p.product_id, sid: p.id, qta: p.product_qta, st: s.name});
                     }
                     else {
                         res[s.ip] = [];
                         if(complete_print || p.print_status !== 'PRINTED')
-                            res[s.ip].push({name: p.product_name, id: p.product_id, stampante: s.name})
+                            res[s.ip].push({name: p.product_display, id: p.product_id, sid: p.id, qta: p.product_qta, st: s.name})
                     }
                 })
+               total.push({name: p.product_display, id: p.product_id, sid: p.id, qta: p.product_qta})
             }
         });
-        //console.log(res)
+
+                console.log(exit)
         for (let pr in res) {
             console.log(pr);
-            print(ord,exit,res[pr],pr)
+            print(ord,exit,res[pr],pr,total)
         }
     });
 }
@@ -93,23 +96,36 @@ function al(s, d, t = 42) {
     return s + sp + d;
 }
 
-function print(order, exit,p,ip) {
-    const device = new escpos.Network(ip);
-    //const device = new escpos.Console();
-    const printer = new escpos.Printer(device);
 
+
+function print(order, exit,p,ip,total) {
+    //const device = new escpos.Network(ip);
+    const device = new escpos.Console();
+    const printer = new escpos.Printer(device);
+    let curr = ''
     let printed = [];
     device.open(function () {
+        console.log(order.table)
         printer
             .encode('850')
             .font('B')
-            .align('ct');
+            .align('ct')
+            .text(exit).text(order.table);
         let out='';
         p.forEach(a=>{
-           console.log(a.stampante);
+           curr= a.st
+           console.log(a.st);
            console.log(a.name);
            printed.push(a.id);
-           printer.text(a.name);
+           printer.align('lt').size(a.st === 'EPSON'? 2: 1, 2).font('B').text(al(a.name, 'x '+a.qta, a.st === 'EPSON'? 26 : undefined)).size().font('B')
+
+           //printer.text(al(a.name, 'X'+a.qta)).size().font('B')
+        });
+        printer.align('ct').text('-----')
+        total.forEach(a=>{
+            console.log('TOTAL');
+            console.log(a.name);
+            printer.align('lt').text(al(a.name, 'x '+a.qta, curr === 'EPSON'? 56 : undefined)).font('B')
         });
         printer.flush();
         console.log('PRINTED');
