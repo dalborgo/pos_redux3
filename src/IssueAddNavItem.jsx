@@ -54,7 +54,7 @@ class IssueAddNavItem extends React.Component {
     dismissToast() {
         this.setState({toastVisible: false});
     }
-    componentWillMount() {
+    componentDidMount() {
         a.getView('rooms', 'all', '').then(
             (res) => {
                 let stanze = res.rows;

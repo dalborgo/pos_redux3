@@ -28,7 +28,7 @@ const appRouter = function (app) {
     });
     app.post("/api/get/var", function (req, res) {
         bucket.get(req.body.variable, function (err, r) {
-            res.json(r)
+            res.send(r)
         })
     });
     app.get("/api/get/query", function (req, res) {

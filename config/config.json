@@ -23,5 +23,6 @@
   "printer": {
     "ip": "10.0.0.116"
   },
-  "salt": "ASTEN"
+  "salt": "ASTEN",
+  "timeout": 30000
 }

@@ -1,27 +1,13 @@
 import React from 'react';
-//import 'whatwg-fetch';
 import {v4} from 'uuid';
-import Swagger from 'swagger-client';
 import config from '../config/config.json';
 import _ from 'underscore'
-import request from 'request';
-import GridListExampleSingleLine from './GridListExampleSingleLine.jsx';
-
 let moment = require('moment')
 moment.locale('it');
-
-//import spec from '../static/sg/sync-gateway-public-1-4_public.json';
-
 import {Nav, NavItem, Grid, Row, Col, Thumbnail, Button} from 'react-bootstrap';
-
-
+import Feed from './feed'
 import api from './api'
-
 const a = new api();
-
-
-//spec.host = config.couchbase.sync_server;
-
 
 const Table = (props) => (
     <div>
@@ -47,8 +33,12 @@ function Rooms(props) {
 }
 
 const Row2 = (props) => {
-    if(props.order) {
-        let tot = props.order.doc.entries.reduce((a, b) => a.product_price * a.product_qta + b.product_price * b.product_qta);
+    if (props.order) {
+        console.log(props.order.doc.entries)
+        let tot = props.order.doc.entries.reduce(function (a, b) {
+            return a + b.product_price * b.product_qta;
+        }, 0);
+        console.log(tot)
         const now = moment().format('YYYYMMDDHHmmss')
         const then = props.order.doc.creating_date;
         const diff = moment.utc(moment(now, "YYYYMMDDHHmmss").diff(moment(then, "YYYYMMDDHHmmss"))).format("HH:mm")
@@ -62,11 +52,11 @@ const Row2 = (props) => {
                 </Thumbnail>
             </Col>
         )
-    }else{
+    } else {
         return (
             <Col xs={6} md={4}>
                 <Thumbnail src="/svg/tab_vuoto.svg" alt="200x200">
-                    <p style={{fontWeight: 'bold',textAlign: 'center'}}>{props.table.value.display}</p>
+                    <p style={{fontWeight: 'bold', textAlign: 'center'}}>{props.table.value.display}</p>
                 </Thumbnail>
             </Col>
         )
@@ -79,7 +69,7 @@ function Thumb(props) {
     return (
         <Grid>
             <Row>
-            {Tables}
+                {Tables}
             </Row>
         </Grid>
     )
@@ -92,82 +82,62 @@ export default class IssueList extends React.Component {
             tables: [],
             rooms: []
         };
-        this.stopPolling = false
+        this.url = `http://${config.couchbase.sync_server_public}/${config.couchbase.sync_db}`;
         this.tick = this.tick.bind(this);
-
     }
+
     tick() {
         this.forceUpdate()
     }
-
-    longpoll(that) {
-        function getChanges(seq) {
-            if (that.stopPolling)
-                return
-            console.log('seq %s', seq);
-            let url = `http://${config.couchbase.sync_server_public}/${config.couchbase.sync_db}`;
-            console.log('Attesa tavoli e ordini...');
-            fetch(url + `/_changes?include_docs=true&feed=longpoll&filter=sync_gateway/bychannel&channels=tables,orders&limit=1&since=${seq}`, {})
-                .then((res) => res.json())
-                .then((res) => {
-                    if (that.stopPolling)
-                        return
-                    let m = res.results;
-                    console.log('Tavoli e ordini trovati ' + m.length);
-                    if (m.length > 0) {
-                        console.log('Carica...');
-                        that.loadData(false);
-                    }
-                    getChanges(res.last_seq);
-                });
-        }
-
-        a.get_var('_sync:seq').then(res => {
-            getChanges(res.value)
-        });
-    }
     componentWillMount() {
     }
-
     componentDidMount() {
-        this.loadData(false);
-        console.log('CARICA');
-        this.longpoll(this);
+        a.get_db().then(res => {
+            this.loadData(false);
+            this.feed = new Feed(res.update_seq, () => {
+                this.loadData(false);
+            });
+        });
         this.interval = setInterval(this.tick, 60000);
     }
 
     componentWillUnmount() {
-        this.stopPolling = true
+        this.feed.stop();
         console.log('unmount')
         clearInterval(this.interval);
     }
 
     loadData(stale) {
-        let o=[]
+        let o = []
         a.getView('tables', 'all', stale).then(
             (res) => {
                 let s = res.rows.filter(t => t.value.Room === 'Room::fe276048-67f3-4cc6-94b3-c13575620e75')
                 let ids = s.map(a => a.value.order);
-                ids=_.compact(ids)
-                a.getAllDocs(ids).then(r=>{
-                    s.forEach(h=>{
-                        let y=_.find(r.rows,function (n) {
-                            try{
+                ids = _.compact(ids)
+
+                console.log(ids)
+                a.getAllDocs(ids).then(r => {
+                    s.forEach(h => {
+                        console.log(r.rows)
+                        let y = _.find(r.rows, function (n) {
+                            try {
                                 return h.id === n.doc.table
-                            }catch(err){
+                            } catch (err) {
                                 return undefined
                             }
                         })
                         o.push({
-                           table : h,
-                           order: y
+                            table: h,
+                            order: y
                         })
                     })
+                    console.log(o)
                     this.setState({tables: o});
                 })
             }
         )
     }
+
     render() {
         return (
             <div>

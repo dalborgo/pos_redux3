@@ -1,9 +1,9 @@
 import React from 'react';
 //import 'whatwg-fetch';
 import {v4} from 'uuid';
-import Swagger from 'swagger-client';
+//import Swagger from 'swagger-client';
 import config from '../config/config.json';
-import request from 'request';
+//import request from 'request';
 import GridListExampleSingleLine from './GridListExampleSingleLine.jsx';
 
 let moment = require('moment')
@@ -42,7 +42,10 @@ function Rooms(props) {
 }
 
 const Row2 = (props) => {
-    let tot = props.entries.reduce((a, b) => a[0] * a[1] + b[0] * b[1]);
+    //let tot = props.entries.reduce((a, b) => a[0] * a[1] + b[0] * b[1]);
+    let tot = props.entries.reduce(function(a, b) {
+        return a + b[0]*b[1];
+    },0);
     const now = moment().format('YYYYMMDDHHmmss')
     const then = props.creating_date;
     const diff = moment.utc(moment(now, "YYYYMMDDHHmmss").diff(moment(then, "YYYYMMDDHHmmss"))).format("HH:mm")
@@ -114,9 +117,9 @@ export default class IssueList extends React.Component {
                 });
         }
 
-        a.get_var('_sync:seq').then(res => {
-            getChanges(res.value)
-        });
+     /*   a.get_var().then(res => {
+            getChanges(res)
+        });*/
     }
 
     componentDidMount() {

@@ -41,7 +41,7 @@ module.exports = {store: ottoman.store, bucket: myBucket, N1qlQuery};
     //console.log("Couchbase Session store is ready for use");
 });*/
 
-app.use(cookieParser());
+//app.use(cookieParser());
 
 
 app.use(function (req, res, next) {
@@ -50,32 +50,12 @@ app.use(function (req, res, next) {
     next();
 });
 
-const user = require("./routes/sync")(app);
+//const user = require("./routes/sync")(app);
 const standard = require("./routes/standard")(app);
 
 //const print = require("./routes/print")(app);
 
-function getChanges(seq) {
-    console.log('seq %s', seq);
-    let url = `http://${config.couchbase.sync_server_public}/${config.couchbase.sync_db}`;
-    console.log('Attesa print');
-    fetch(url + `/_changes?include_docs=true&feed=longpoll&filter=sync_gateway/bychannel&channels=prints&since=${seq}`, {})
-        .then((res) => res.json())
-        .then((res) => {
-            let m = res.results;
-            console.log('Print ' + m.length);
-            if (m.length > 0) {
-                console.log('PRINT ACCEPTED');
-                m.map(r => {stampa(r)});
-            }
-            getChanges(res.last_seq);
-        });
-}
 
-
-myBucket.get('_sync:seq', function (err, r) {
-    getChanges(r.value);
-});
 
 
 app.get('/*', (req, res) => {
@@ -89,7 +69,28 @@ req.on('row', function(row) {
     console.log('Got a row',row);
 });*/
 
+app.on('listening', function () {
+  /*  function getChanges(seq) {
+        console.log('seq %s', seq);
+        let url = `http://${config.couchbase.sync_server_public}/${config.couchbase.sync_db}`;
+        console.log('Attesa print');
+        fetch(url + `/_changes?include_docs=true&feed=longpoll&filter=sync_gateway/bychannel&channels=prints&since=${seq}`, {})
+            .then((res) => res.json())
+            .then((res) => {
+                let m = res.results;
+                console.log('Print ' + m.length);
+                if (m.length > 0) {
+                    console.log('PRINT ACCEPTED');
+                    m.map(r => {stampa(r)});
+                }
+                getChanges(res.last_seq);
+            });
+    }
 
+    myBucket.get('_sync:seq', function (err, r) {
+        getChanges(r.value);
+    });*/
+});
 
 ottoman.ensureIndices(function (error) {
     if (error) {

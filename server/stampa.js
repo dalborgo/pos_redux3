@@ -61,6 +61,8 @@ function getPrinter(pd, ord, exit) {
         //console.log(complete_print)
         let print_exit = pd.exit;
         let complete_print = pd.complete_print;
+        console.log(ord)
+        console.log(pd)
         ord.entries.forEach(function (p) {
             if(p.exit === print_exit) {
                 let r = _.where(prn, {"product_category": p.product_category});
@@ -78,11 +80,11 @@ function getPrinter(pd, ord, exit) {
                total.push({name: p.product_display, id: p.product_id, sid: p.id, qta: p.product_qta})
             }
         });
-
-                console.log(exit)
+        console.log(res)
+        console.log(exit)
         for (let pr in res) {
             console.log(pr);
-            print(ord,exit,res[pr],pr,total)
+            print(ord,exit,res[pr],pr,total,pd.exit_name,pd.table_name)
         }
     });
 }
@@ -98,9 +100,9 @@ function al(s, d, t = 42) {
 
 
 
-function print(order, exit,p,ip,total) {
-    //const device = new escpos.Network(ip);
-    const device = new escpos.Console();
+function print(order, exit,p,ip,total,en,tn) {
+    const device = new escpos.Network(ip);
+   // const device = new escpos.Console();
     const printer = new escpos.Printer(device);
     let curr = ''
     let printed = [];
@@ -110,7 +112,7 @@ function print(order, exit,p,ip,total) {
             .encode('850')
             .font('B')
             .align('ct')
-            .text(exit).text(order.table);
+            .text(en).text(tn);
         let out='';
         p.forEach(a=>{
            curr= a.st

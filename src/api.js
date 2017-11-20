@@ -19,7 +19,8 @@ export default class api {
         }).then((res) => res.json ? res.json(): undefined);
     }
     getAllDocs(ids) {
-        ids=('"' + ids.join("','") + '"')
+        ids=('"' + ids.join('","') + '"')
+        console.log(ids)
         return fetch(this.url + '/_all_docs?include_docs=true&keys=['+ids+']', {
             headers: {
                 'Content-Type': 'application/json'
@@ -86,6 +87,12 @@ export default class api {
             method: 'post',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({variable:v}),
+        }).then((res) => res.json());
+    }
+    get_db(){
+        return fetch(this.url+'/', {
+            method: 'get',
+            headers: {'Content-Type': 'application/json'}
         }).then((res) => res.json());
     }
     getView(ddoc, view, stale) {
