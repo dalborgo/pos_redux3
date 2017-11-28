@@ -106,11 +106,13 @@ function print(order, exit,p,ip,total,en,tn) {
     const printer = new escpos.Printer(device);
     let curr = ''
     let printed = [];
-    device.open(function () {
+    let net=device.open(function (err,dev) {
+        //console.log(net)
         console.log(order.table)
         printer
             .encode('850')
             .font('B')
+            .style('BW')
             .align('ct')
             .text(en).text(tn);
         let out='';

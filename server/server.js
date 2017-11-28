@@ -11,6 +11,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import stampa from './stampa';
 import config from '../config/config.json';
+import DataManager from './DataManager';
 const app = express();
 app.use(express.static('static'));
 app.use(bodyParser.json());
@@ -69,28 +70,6 @@ req.on('row', function(row) {
     console.log('Got a row',row);
 });*/
 
-app.on('listening', function () {
-  /*  function getChanges(seq) {
-        console.log('seq %s', seq);
-        let url = `http://${config.couchbase.sync_server_public}/${config.couchbase.sync_db}`;
-        console.log('Attesa print');
-        fetch(url + `/_changes?include_docs=true&feed=longpoll&filter=sync_gateway/bychannel&channels=prints&since=${seq}`, {})
-            .then((res) => res.json())
-            .then((res) => {
-                let m = res.results;
-                console.log('Print ' + m.length);
-                if (m.length > 0) {
-                    console.log('PRINT ACCEPTED');
-                    m.map(r => {stampa(r)});
-                }
-                getChanges(res.last_seq);
-            });
-    }
-
-    myBucket.get('_sync:seq', function (err, r) {
-        getChanges(r.value);
-    });*/
-});
 
 ottoman.ensureIndices(function (error) {
     if (error) {
@@ -98,7 +77,30 @@ ottoman.ensureIndices(function (error) {
     }
     const server = app.listen(3000, function () {
         console.log(config.couchbase);
+        //DataManager.startDatabaseOperations().then(res=> console.log(res))
         console.log("Listening on port %s...", server.address().port);
+        function getChanges(seq) {
+            console.log('seq %s', seq);
+            let url = `http://${config.couchbase.sync_server_public}/${config.couchbase.sync_db}`;
+            console.log('Attesa print');
+            fetch(url + `/_changes?include_docs=true&feed=longpoll&filter=sync_gateway/bychannel&channels=prints&since=${seq}`, {})
+                .then((res) => res.json())
+                .then((res) => {
+                    let m = res.results;
+                    console.log('Print ' + m.length);
+                    if (m.length > 0) {
+                        console.log('PRINT ACCEPTED');
+                        m.map(r => {stampa(r)});
+                    }
+                    getChanges(res.last_seq);
+                });
+        }
+        const url = `http://${config.couchbase.sync_server_public}/${config.couchbase.sync_db}`
+        fetch(url+'/', {
+            method: 'get',
+            headers: {'Content-Type': 'application/json'}
+        }).then((res) => res.json()).then(r=> getChanges(r.update_seq));
+        console.log('asynch')
     });
 
 });

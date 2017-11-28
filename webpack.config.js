@@ -23,7 +23,7 @@ module.exports = {
             {
                 test: /\.(jsx|js)$/,
                 loader: 'babel-loader',
-                exclude: /node_modules/,
+                exclude: /(node_modules|dist)/,
                 query: {
                     presets: ['react', 'es2015'],
                     plugins: ["transform-object-rest-spread"]
