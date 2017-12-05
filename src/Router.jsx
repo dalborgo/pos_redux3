@@ -13,6 +13,7 @@ import UserForm from './UserForm.jsx'
 import IssueAddNavItem from './IssueAddNavItem.jsx'
 import Room from './Room.jsx';
 import Attivi from './Attivi.jsx';
+import Import from './Import.jsx';
 import Tutti from './Tutti.jsx';
 import Redux from './components/Redux.jsx';
 const NoMatch = () => <p>Page Not Found</p>;
@@ -37,6 +38,9 @@ const Header = () => (
             </LinkContainer>
             <LinkContainer to="/tutti">
                 <NavItem>Tavoli Tutti</NavItem>
+            </LinkContainer>
+            <LinkContainer to="/import">
+                <NavItem>Import</NavItem>
             </LinkContainer>
         </Nav>
         <Nav pullRight>
@@ -65,6 +69,7 @@ const BasicExample = () => (
                 </Route>
                 <Route path="/redux/:filter" component={Redux} />
                 <Route path="/attivi" component={Attivi} />
+                <Route path="/import" component={Import} />
                 <Redirect from="/stanze" to="/room"/>
                 <Route component={NoMatch}/>
             </Switch>

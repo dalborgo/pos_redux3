@@ -112,7 +112,7 @@ function print(order, exit,p,ip,total,en,tn) {
         printer
             .encode('850')
             .font('B')
-            .style('BW')
+            //.style('BW')
             .align('ct')
             .text(en).text(tn);
         let out='';
